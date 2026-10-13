@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
@@ -36,8 +36,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y -qq libicu-dev
-          pip install -U pip pyicu prek
-          pip install --group dev -e .
+          make setup-python
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Run pre-commit hooks
         run: prek run --all-files --show-diff-on-failure
 
@@ -61,7 +61,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
@@ -69,8 +69,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y -qq libicu-dev
-          pip install -U pip pyicu
-          pip install --group dev -e .
+          make setup-python
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Run pytest tests
         env:
           YENTE_INDEX_TYPE: elasticsearch
@@ -97,7 +97,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
@@ -105,8 +105,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y -qq libicu-dev
-          pip install -U pip pyicu
-          pip install --group dev -e .
+          make setup-python
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Run pytest tests with opensearch backend
         env:
           YENTE_INDEX_TYPE: opensearch
@@ -122,7 +122,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
@@ -130,11 +130,11 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y -qq libicu-dev
-          pip install -U pip pyicu
-          pip install --group dev -e .
+          make setup-python
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Build a distribution
         run: |
-          python3 -m build --wheel
+          .venv/bin/python -m build --wheel
       - name: Attest wheel build provenance
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/attest-build-provenance@v4

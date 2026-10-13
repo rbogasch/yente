@@ -10,7 +10,7 @@ tags: [security, sbom, cra, release-engineering, supply-chain]
 
 GitHub's auto-generated dependency-graph SBOM has two gaps for our purposes:
 
-1. **Incomplete scope.** It captures direct Python deps from `pyproject.toml` but misses the OS packages we install on top of `python:3.12-slim` and the contents of the base image itself.
+1. **Incomplete scope.** It captures direct Python deps from `pyproject.toml` but misses the OS packages we install on top of `python:3.14-slim-trixie` and the contents of the base image itself.
 2. **Not frozen per release.** It reflects whatever is on `main` at scan time, not the `ghcr.io/opensanctions/yente:5.4.0` image customers actually pull. CRA Annex I expects "the SBOM for the version you are running" — not a moving target.
 
 The EU Cyber Resilience Act (in force, with the bulk of manufacturer obligations applying from December 2027) requires an SBOM "at least covering the top-level dependencies", coordinated vulnerability handling, and security/risk documentation. This plan is about being CRA-conformant by the time those obligations bite, and reducing the customer-question burden today.

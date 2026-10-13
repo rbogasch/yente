@@ -1,27 +1,23 @@
 services:
   index:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.4.2
-    expose:
-      - "9200"
-    ports:
-      - "127.0.0.1:9200:9200"
-    container_name: index
     environment:
-      - node.name=index
-      - cluster.name=opensanctions-index
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      node.name: index
+      cluster.name: opensanctions-index
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    mem_limit: 2g
+    memswap_limit: 2g
+    cpus: 1.5
     volumes:
-      - index-os-data:/usr/share/elasticsearch/data
+      - index-data:/usr/share/elasticsearch/data
     healthcheck:
-      # curl --fail exits with an exit code >0 if anything about the request fails
       test: ["CMD-SHELL", "curl --fail http://localhost:9200/_cluster/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     deploy:
       placement:
         max_replicas_per_node: 1
@@ -29,26 +25,23 @@ services:
         condition: on-failure
 
   app:
-    image: ghcr.io/opensanctions/yente:5.5.0
+    image: yente:local
+    build: .
     depends_on:
       index:
         condition: service_healthy
     ports:
       - "127.0.0.1:8000:8000"
+    volumes:
+      - ./manifests:/app/local-manifests:ro
     environment:
-      YENTE_INDEX_TYPE: "elasticsearch"
+      YENTE_INDEX_TYPE: elasticsearch
       YENTE_INDEX_URL: http://index:9200
-      # for non-commercial use:
-      # YENTE_MANIFEST: /app/manifests/civic.yml
-      # commercial use:
-      YENTE_MANIFEST: /app/manifests/commercial.yml
-      # Get your delivery token from the customer portal: https://www.opensanctions.org/account/bulk/
-      OPENSANCTIONS_DELIVERY_TOKEN: "your-secret-token"
-    # If you want to index data from the host machine as a custom dataset,
-    # create a volume mount here to make that data accessible from the
-    # container:
-    # volumes:
-    #   - "/path/on/the/host/computer:/data"
+      YENTE_MANIFEST: /app/local-manifests/local-sanctions.yml
+      YENTE_UPDATE_TOKEN: ${YENTE_UPDATE_TOKEN:-local-only-change-me}
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1.0
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/healthz" ]
       interval: 30s
@@ -66,4 +59,4 @@ services:
         window: 120s
 
 volumes:
-  index-os-data: null
+  index-data:
